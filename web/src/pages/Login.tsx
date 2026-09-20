@@ -1,20 +1,52 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { PRODUCT_NAME } from "../product.ts";
+import { FleetMark } from "../components/FleetMark.tsx";
 import { signIn, signUp } from "../authClient.ts";
 
 type Mode = "sign-in" | "sign-up";
 
 export function Login() {
+  const [searchParams] = useSearchParams();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(() =>
+    searchParams.has("error")
+      ? "GitHub sign-in was not completed. Please try again."
+      : null,
+  );
   const [busy, setBusy] = useState(false);
+  const [githubBusy, setGithubBusy] = useState(false);
   const navigate = useNavigate();
+
+  async function signInWithGitHub() {
+    setGithubBusy(true);
+    setError(null);
+    try {
+      const result = await signIn.social({
+        provider: "github",
+        callbackURL: new URL("/app", window.location.origin).href,
+        errorCallbackURL: new URL("/login", window.location.origin).href,
+      });
+      if (result.error) {
+        setError(
+          result.error.code === "PROVIDER_NOT_FOUND"
+            ? "GitHub sign-in is not available yet. Please use email and password."
+            : "Could not sign in with GitHub. Please try again.",
+        );
+        setGithubBusy(false);
+      }
+      // Better Auth redirects to GitHub on success. Stay disabled until then.
+    } catch {
+      setError("Could not reach the server.");
+      setGithubBusy(false);
+    }
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (busy || githubBusy) return;
     setBusy(true);
     setError(null);
     try {
@@ -40,6 +72,7 @@ export function Login() {
     <div className="auth">
       <div className="card">
         <Link to="/" className="brand">
+          <FleetMark />
           {PRODUCT_NAME}
         </Link>
         <h1>{mode === "sign-up" ? "Create an account" : "Sign in"}</h1>
@@ -49,7 +82,17 @@ export function Login() {
             : "Welcome back."}
         </p>
 
-        {error ? <div className="error">{error}</div> : null}
+        {error ? <div className="error" role="alert">{error}</div> : null}
+
+        <button
+          className="btn github-sign-in"
+          type="button"
+          disabled={busy || githubBusy}
+          onClick={signInWithGitHub}
+        >
+          {githubBusy ? "Redirecting to GitHub…" : "Continue with GitHub"}
+        </button>
+        <p className="auth-divider">or continue with email</p>
 
         <form onSubmit={submit}>
           <label>
@@ -73,7 +116,7 @@ export function Login() {
               onChange={(e) => setPassword(e.target.value)}
             />
           </label>
-          <button className="btn" type="submit" disabled={busy}>
+          <button className="btn" type="submit" disabled={busy || githubBusy}>
             {busy ? "Working…" : mode === "sign-up" ? "Create account" : "Sign in"}
           </button>
         </form>
@@ -83,6 +126,7 @@ export function Login() {
           <button
             type="button"
             className="btn ghost"
+            disabled={busy || githubBusy}
             style={{ padding: "2px 8px", fontSize: 13 }}
             onClick={() => {
               setMode(mode === "sign-up" ? "sign-in" : "sign-up");

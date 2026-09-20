@@ -77,6 +77,27 @@ session. `FLEET_PUBLIC_BASE_URL` matters just as much for a different reason:
 every callback URL handed to an agent is built from it, so a wrong value means
 agents call back to an address that never reaches you.
 
+### GitHub sign-in
+
+The login and registration page supports **Continue with GitHub**. Create a
+[GitHub OAuth App](https://github.com/settings/developers) with your public
+origin as its Homepage URL and
+`<FLEET_PUBLIC_BASE_URL>/api/auth/callback/github` as its Authorization callback
+URL. Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in the server environment,
+then restart the gateway. Keep the secret out of frontend environment variables.
+
+For local development with `npm run dev` and `npm run dev:web`, use
+`http://localhost:5173` for both `FLEET_PUBLIC_BASE_URL` and
+`FLEET_TRUSTED_ORIGINS`, and register
+`http://localhost:5173/api/auth/callback/github` as the OAuth callback URL.
+Vite proxies the callback to the gateway. Use a separate OAuth App for production.
+
+Successful sign-in opens `/app`; new users receive their own tenant through
+the existing user creation hook. Cancelled or failed authorization returns to
+the login page with an error. Email/password sign-in remains available when
+GitHub credentials are not configured. See the
+[Better Auth GitHub guide](https://better-auth.com/docs/authentication/github).
+
 ## Connecting an agent
 
 See [How to integrate an agent](docs/how-to-integrate-agent.md) for the complete

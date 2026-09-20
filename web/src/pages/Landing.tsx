@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AsciiGlobe } from "../components/AsciiGlobe.tsx";
 import { cameraAt } from "../landingCamera.ts";
 import { PRODUCT_NAME } from "../product.ts";
+import { FleetMark } from "../components/FleetMark.tsx";
 import { BOX, LOOP, TIMELINE, VIEWBOX, boxY, loopLabelY, loopPath } from "../traceGraph.ts";
 import "../landing.css";
 
@@ -427,10 +428,10 @@ export function Landing() {
 
       <div className="site-body">
         <nav className="site-nav">
-          <span className="wordmark"><i />{PRODUCT_NAME}</span>
+          <span className="wordmark"><FleetMark />{PRODUCT_NAME}</span>
           <span className="spacer" />
           <div className="links">
-            <a href="https://github.com/firthstack/agent-fleet">Docs</a>
+            <a href="https://github.com/jwfing/agent-fleet">Docs</a>
             <a href="https://a2a-protocol.org">Protocol</a>
             <Link to="/login">Sign in</Link>
             <Link to="/login" className="site-cta">
@@ -441,11 +442,6 @@ export function Landing() {
 
         <section className="stop centred hero">
           <div className="stop-copy">
-            <p className="eyebrow quiet brand-lockup">
-              <span className="live-dot" />
-              <strong>Fleet</strong>
-              <span>yourfleet.run</span>
-            </p>
             <h1 className="wordmark-hero">
               <span className="hero-line">Turn independent agents</span>
               <span className="hero-line">into one <span className="run">observable fleet.</span></span>
@@ -493,7 +489,7 @@ export function Landing() {
               <div className="artifact-head">connect an agent</div>
               <div className="shell">
                 <div>
-                  <span className="prompt">$</span> curl -X POST yourfleet.run/api/agents \
+                  <span className="prompt">$</span> curl -X POST fleet.elseward.xyz/api/agents \
                 </div>
                 <div className="arg">&nbsp;&nbsp;-d '{`{"endpointUrl":"https://my-agent.dev"}`}'</div>
                 <div className="ok">✓ card fetched · 3 skills registered</div>
@@ -581,7 +577,7 @@ export function Landing() {
             </p>
             <div className="fleet-console" aria-label="Example Fleet run dashboard">
               <header className="console-bar">
-                <div className="console-brand"><i /> Fleet</div>
+                <div className="console-brand"><FleetMark />{PRODUCT_NAME}</div>
                 <div className="console-crumb"><span>runs</span><b>/</b> ship-auth-hardening</div>
                 <span className="console-live"><i /> running</span>
               </header>
@@ -648,7 +644,7 @@ export function Landing() {
               <Link to="/login" className="site-cta big">
                 Start a run
               </Link>
-              <a className="site-ghost" href="https://github.com/firthstack/agent-fleet">
+              <a className="site-ghost" href="https://github.com/jwfing/agent-fleet">
                 Read the docs
               </a>
             </div>
@@ -657,9 +653,9 @@ export function Landing() {
 
         <footer className="site-foot">
           <div>
-            <span>yourfleet.run</span>
+            <span>fleet.elseward.xyz</span>
             <span className="spacer" />
-            <a href="https://github.com/firthstack/agent-fleet">github</a>
+            <a href="https://github.com/jwfing/agent-fleet">github</a>
             <a href="https://a2a-protocol.org">A2A protocol</a>
           </div>
         </footer>

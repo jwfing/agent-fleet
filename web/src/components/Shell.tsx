@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { PRODUCT_NAME } from "../product.ts";
+import { FleetMark } from "./FleetMark.tsx";
 import { getMe, type Me } from "../api.ts";
 import { signOut } from "../authClient.ts";
 
@@ -30,6 +31,7 @@ export function Shell({ children }: { children: (me: Me) => ReactNode }) {
     <>
       <header className="topbar">
         <Link to="/app" className="brand">
+          <FleetMark />
           {PRODUCT_NAME}
         </Link>
         <nav className="nav">
