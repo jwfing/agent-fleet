@@ -77,6 +77,84 @@ session. `FLEET_PUBLIC_BASE_URL` matters just as much for a different reason:
 every callback URL handed to an agent is built from it, so a wrong value means
 agents call back to an address that never reaches you.
 
+### GitHub sign-in
+
+The login and registration page supports **Continue with GitHub**. Create a
+[GitHub OAuth App](https://github.com/settings/developers) with your public
+origin as its Homepage URL and
+`<FLEET_PUBLIC_BASE_URL>/api/auth/callback/github` as its Authorization callback
+URL. Set `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` in the server environment,
+then restart the gateway. Keep the secret out of frontend environment variables.
+
+For local development with `npm run dev` and `npm run dev:web`, use
+`http://localhost:5173` for both `FLEET_PUBLIC_BASE_URL` and
+`FLEET_TRUSTED_ORIGINS`, and register
+`http://localhost:5173/api/auth/callback/github` as the OAuth callback URL.
+Vite proxies the callback to the gateway. Use a separate OAuth App for production.
+
+Successful sign-in opens `/app`; new users receive their own tenant through
+the existing user creation hook. Cancelled or failed authorization returns to
+the login page with an error. Email/password sign-in remains available when
+GitHub credentials are not configured. See the
+[Better Auth GitHub guide](https://better-auth.com/docs/authentication/github).
+
+### Email verification over SMTP
+
+Set the following server environment variables to enable verification:
+
+```dotenv
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=you@gmail.com
+SMTP_PASSWORD=your-google-app-password
+SMTP_FROM="Fleet <you@gmail.com>"
+```
+
+For Gmail, enable two-step verification and create a dedicated
+[app password](https://support.google.com/accounts/answer/185833). Use the
+same Gmail address for `SMTP_USER` and `SMTP_FROM`; enter the app password
+without the display spaces. Do not commit credentials or expose them through
+`VITE_*` variables. Restart the gateway after setting these values.
+Port 465 uses implicit TLS; port 587 requires STARTTLS. Certificate validation
+remains enabled.
+
+`FLEET_PUBLIC_BASE_URL` must be your reachable public origin, and
+`FLEET_TRUSTED_ORIGINS` must include the frontend origin. For local development,
+use the Vite origin described above. Verification links expire after one hour.
+Registration shows an inbox prompt instead of opening the console. Clicking
+the link verifies the address and returns to sign-in. The login page also
+offers resending after an unverified sign-in attempt, including for accounts
+created before SMTP was enabled. Existing sessions are not revoked.
+
+Leaving all SMTP fields except the port blank preserves sign-in without
+verification for local development. Partial configuration fails startup.
+GitHub sign-in continues to use the provider's identity flow.
+
+Resend requests are limited to three per minute per IP by Better Auth's
+production rate limiter, with a 60-second UI cooldown. Mail is sent in the
+background; an accepted request does not guarantee inbox delivery. Delivery
+failures produce a generic server log message without email addresses, tokens,
+or SMTP credentials. There is no durable mail queue: if the process stops
+before sending, request another email after restart.
+
+To verify a deployment, register an address you control, confirm sign-in is
+blocked before verification, open the received link, then sign in. If no
+message arrives, check spam, SMTP credentials, provider limits and server logs.
+
+### Forgotten passwords
+
+The **Forgot password?** link on the sign-in page sends a reset link using the
+same SMTP configuration. No additional credentials or database migration are
+needed. The link expires after 30 minutes and is consumed on successful use.
+The reset page asks for a new password (8–128 characters) and confirmation,
+then returns to sign-in. Resetting a password revokes all of that user's
+existing sessions. Email verification requirements still apply after reset.
+
+The request page gives the same response for registered and unknown addresses.
+Production requests are limited to three per minute per IP, and the UI imposes
+a 60-second resend cooldown. Invalid, expired and consumed links offer a path
+to request a new link. If SMTP is not configured, recovery is unavailable.
+
 ## Connecting an agent
 
 See [How to integrate an agent](docs/how-to-integrate-agent.md) for the complete

@@ -178,10 +178,22 @@ code,
   background: var(--surface);
 }
 .brand {
-  font-family: var(--mono);
-  font-weight: 500;
-  font-size: 15px;
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 18px;
   color: var(--ink);
+}
+.fleet-mark {
+  display: inline-block;
+  width: 30px;
+  height: 28px;
+  flex: 0 0 auto;
+  background-color: var(--accent);
+  -webkit-mask: url("/fleet-icon.svg") center / contain no-repeat;
+  mask: url("/fleet-icon.svg") center / contain no-repeat;
 }
 .brand:hover {
   text-decoration: none;
@@ -268,6 +280,14 @@ footer.site {
 .card form {
   display: grid;
   gap: 14px;
+}
+.github-sign-in {
+  width: 100%;
+}
+.auth-divider {
+  margin: 20px 0;
+  text-align: center;
+  font-size: 13px;
 }
 .switch {
   font-size: 13px;

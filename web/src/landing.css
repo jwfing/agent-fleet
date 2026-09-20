@@ -520,17 +520,18 @@
   display: flex;
   align-items: center;
   gap: 9px;
-  font-family: var(--mono);
-  font-size: 14px;
+  font-family: var(--sans);
+  font-size: 18px;
   font-weight: 600;
   letter-spacing: -0.02em;
 }
-.site-nav .wordmark i {
-  width: 7px;
-  height: 7px;
-  border: 1px solid var(--accent-bright);
-  border-radius: 50%;
-  box-shadow: 0 0 10px rgba(111, 179, 224, 0.85);
+.site .fleet-mark {
+  background-color: #6fb3e0;
+}
+.brand-lockup .fleet-mark,
+.console-brand .fleet-mark {
+  width: 24px;
+  height: 22px;
 }
 .site-nav .links {
   display: flex;
@@ -1041,15 +1042,10 @@
   color: var(--ink);
   font-weight: 600;
 }
-.console-brand i,
 .console-live i {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-}
-.console-brand i {
-  border: 1px solid var(--accent-bright);
-  box-shadow: 0 0 8px rgba(124, 200, 242, 0.7);
 }
 .console-crumb {
   color: var(--muted);
