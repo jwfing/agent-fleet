@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { Pool } from "pg";
+import { createAuthEmailSenders } from "./email.js";
 
 /**
  * Human identity. Agents authenticate with bearer tokens on `/a2a/*`; this is
@@ -33,6 +34,7 @@ export interface CreateAuthOptions {
 
 export function createAuth(opts: CreateAuthOptions) {
   const connectionString = opts.connectionString;
+  const emailSenders = createAuthEmailSenders();
   return betterAuth({
     // User-visible: Better Auth puts it in the mail it sends. Kept in step
     // with the web app's PRODUCT_NAME by test/web/product.test.ts.
@@ -40,7 +42,30 @@ export function createAuth(opts: CreateAuthOptions) {
     ...(opts.baseURL ? { baseURL: opts.baseURL } : {}),
     basePath: "/api/auth",
     database: new Pool({ connectionString, ssl: ssl(connectionString), max: 4 }),
-    emailAndPassword: { enabled: true },
+    emailAndPassword: {
+      enabled: true,
+      requireEmailVerification: Boolean(emailSenders),
+      ...(emailSenders ? {
+        sendResetPassword: emailSenders.sendResetPassword,
+        resetPasswordTokenExpiresIn: 30 * 60,
+        revokeSessionsOnPasswordReset: true,
+      } : {}),
+    },
+    ...(emailSenders ? {
+      emailVerification: {
+        sendVerificationEmail: emailSenders.sendVerificationEmail,
+        sendOnSignUp: true,
+        sendOnSignIn: false,
+        autoSignInAfterVerification: false,
+        expiresIn: 3600,
+      },
+    } : {}),
+    rateLimit: {
+      customRules: {
+        "/send-verification-email": { window: 60, max: 3 },
+        "/request-password-reset": { window: 60, max: 3 },
+      },
+    },
     // Prefixed table names. The defaults are `user`, `session`, `account` and
     // `verification`: `user` is a reserved word in Postgres (so every query
     // has to quote it), and all four are generic enough to collide with

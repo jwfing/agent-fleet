@@ -1,8 +1,8 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { PRODUCT_NAME } from "../product.ts";
 import { FleetMark } from "../components/FleetMark.tsx";
-import { signIn, signUp } from "../authClient.ts";
+import { signIn, signUp, sendVerificationEmail } from "../authClient.ts";
 
 type Mode = "sign-in" | "sign-up";
 
@@ -13,12 +13,50 @@ export function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(() =>
     searchParams.has("error")
-      ? "GitHub sign-in was not completed. Please try again."
+      ? ["invalid_token", "token_expired", "user_not_found"].includes((searchParams.get("error") ?? "").toLowerCase())
+        ? "This verification link is invalid or expired. Sign in to request a new one."
+        : "GitHub sign-in was not completed. Please try again."
       : null,
   );
   const [busy, setBusy] = useState(false);
   const [githubBusy, setGithubBusy] = useState(false);
+  const [verificationEmail, setVerificationEmail] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(() =>
+    !searchParams.has("error") && searchParams.get("verified") === "1"
+      ? "Email verified. You can now sign in."
+      : !searchParams.has("error") && searchParams.get("passwordReset") === "1"
+        ? "Password reset. Sign in with your new password."
+        : null,
+  );
+  const [resendWait, setResendWait] = useState(0);
   const navigate = useNavigate();
+  const verificationCallback = new URL("/login?verified=1", window.location.origin).href;
+
+  useEffect(() => {
+    if (!resendWait) return;
+    const timer = window.setTimeout(() => setResendWait((left) => left - 1), 1000);
+    return () => window.clearTimeout(timer);
+  }, [resendWait]);
+
+  async function resendVerification() {
+    if (!verificationEmail || busy || githubBusy || resendWait) return;
+    setBusy(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const result = await sendVerificationEmail({ email: verificationEmail, callbackURL: verificationCallback });
+      if (result.error) {
+        setError("Could not request a verification email. Please try again later.");
+      } else {
+        setNotice("If this address needs verification, an email will arrive shortly. Check your spam folder too.");
+        setResendWait(60);
+      }
+    } catch {
+      setError("Could not reach the server.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function signInWithGitHub() {
     setGithubBusy(true);
@@ -49,15 +87,30 @@ export function Login() {
     if (busy || githubBusy) return;
     setBusy(true);
     setError(null);
+    setNotice(null);
+    setVerificationEmail(null);
     try {
       const result =
         mode === "sign-up"
-          ? await signUp.email({ email, password, name: email.split("@")[0] })
+          ? await signUp.email({ email, password, name: email.split("@")[0], callbackURL: verificationCallback })
           : await signIn.email({ email, password });
       if (result.error) {
+        if (result.error.code === "EMAIL_NOT_VERIFIED") {
+          setVerificationEmail(email);
+          setError("Verify your email address before signing in. You can request a new link below.");
+          return;
+        }
         // Better Auth's own message says what is actually wrong — a weak
         // password, an address already taken — so it beats anything generic.
         setError(result.error.message ?? "Could not sign you in.");
+        return;
+      }
+      if (mode === "sign-up" && !result.data?.token) {
+        setVerificationEmail(email);
+        setNotice("Check your inbox to verify your email before signing in. If this address is already registered, sign in or request another verification email.");
+        setResendWait(60);
+        setMode("sign-in");
+        setPassword("");
         return;
       }
       navigate("/app");
@@ -83,6 +136,15 @@ export function Login() {
         </p>
 
         {error ? <div className="error" role="alert">{error}</div> : null}
+        {notice ? <p role="status">{notice}</p> : null}
+        {verificationEmail ? (
+          <div className="verification-prompt">
+            <p>Verification address: <strong>{verificationEmail}</strong></p>
+            <button className="btn ghost" type="button" disabled={busy || githubBusy || resendWait > 0} onClick={resendVerification}>
+              {resendWait > 0 ? `Resend in ${resendWait}s` : "Resend verification email"}
+            </button>
+          </div>
+        ) : null}
 
         <button
           className="btn github-sign-in"
@@ -120,6 +182,7 @@ export function Login() {
             {busy ? "Working…" : mode === "sign-up" ? "Create account" : "Sign in"}
           </button>
         </form>
+        {mode === "sign-in" ? <Link to="/forgot-password">Forgot password?</Link> : null}
 
         <p className="switch">
           {mode === "sign-up" ? "Already have an account? " : "No account yet? "}
@@ -131,6 +194,8 @@ export function Login() {
             onClick={() => {
               setMode(mode === "sign-up" ? "sign-in" : "sign-up");
               setError(null);
+              setNotice(null);
+              setVerificationEmail(null);
             }}
           >
             {mode === "sign-up" ? "Sign in" : "Create one"}
