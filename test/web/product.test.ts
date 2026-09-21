@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { PRODUCT_NAME } from "../../web/src/product";
+import { renderSiteHead, SITE_TITLE } from "../../web/src/siteMetadata";
 
 /**
  * The name was written out in four places and two of them had already gone
@@ -39,7 +40,8 @@ describe("the product's name", () => {
   });
 
   it("is what the browser tab says", () => {
-    expect(read("web/index.html")).toContain(`<title>${PRODUCT_NAME}</title>`);
+    expect(SITE_TITLE).toContain(PRODUCT_NAME);
+    expect(renderSiteHead(true)).toContain(`<title data-fleet-seo>${SITE_TITLE}</title>`);
   });
 
   it("is what the server signs its mail with", () => {

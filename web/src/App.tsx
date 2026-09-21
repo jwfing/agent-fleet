@@ -10,6 +10,7 @@ import { Workflows } from "./pages/Workflows.tsx";
 import { Runs } from "./pages/Runs.tsx";
 import { RunDetail } from "./pages/RunDetail.tsx";
 import { ChunkBoundary } from "./components/ChunkBoundary.tsx";
+import { SiteMetadata } from "./components/SiteMetadata.tsx";
 
 /**
  * The workflow editor is the one route loaded on demand.
@@ -29,7 +30,7 @@ const WorkflowEditor = lazy(() =>
 
 export function App() {
   return (
-    <Routes>
+    <><SiteMetadata /><Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
@@ -61,6 +62,6 @@ export function App() {
       <Route path="/app/runs" element={<Runs />} />
       <Route path="/app/runs/:runId" element={<RunDetail />} />
       <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    </Routes></>
   );
 }

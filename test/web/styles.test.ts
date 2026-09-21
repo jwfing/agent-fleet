@@ -362,8 +362,9 @@ describe("the app stylesheet", () => {
     // name in both is decided by import order — which is not a decision.
     const landing = readFileSync(new URL("../../web/src/landing.css", import.meta.url), "utf8");
     const scoped = new Set(classesIn(landing.replace(/\.site\b/g, "")));
-    // `.site` itself is the scope, and tone words are deliberately shared.
-    const shared = new Set(["site", "ok", "bad", "warn", "live", "quiet", "wide", "spacer"]);
+    // `.site` is the scope; tone words and the shared FleetMark component
+    // deliberately have site-specific overrides with higher specificity.
+    const shared = new Set(["site", "ok", "bad", "warn", "live", "quiet", "wide", "spacer", "fleet-mark"]);
     // Only an UNSCOPED class can reach across. `pre .k` cannot match anything
     // the landing page renders; a bare `.empty` matched every one of them,
     // and was putting a dashed border and 14px of padding on a glyph.

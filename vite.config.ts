@@ -1,9 +1,15 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { renderSiteHead } from "./web/src/siteMetadata.ts";
 
 export default defineConfig({
   root: "web",
-  plugins: [react()],
+  plugins: [react(), {
+    name: "fleet-metadata",
+    transformIndexHtml(html, context) {
+      return html.replace("<!--fleet:metadata-->", renderSiteHead(context.path === "/" || context.path === "/index.html"));
+    },
+  }],
   build: {
     // The gateway serves this directory; see src/fleet/site/server.ts.
     outDir: "../dist/web",

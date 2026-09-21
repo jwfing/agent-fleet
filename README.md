@@ -155,6 +155,21 @@ Production requests are limited to three per minute per IP, and the UI imposes
 a 60-second resend cooldown. Invalid, expired and consumed links offer a path
 to request a new link. If SMTP is not configured, recovery is unavailable.
 
+## Homepage rendering and search metadata
+
+`npm run build` prerenders the actual React landing page into `dist/web/index.html`.
+Its product copy, single H1, links and JSON-LD are readable without JavaScript;
+React hydrates the same page to add the interactive scene. `dist/web/app.html`
+is a separate, empty `noindex` shell for authentication and console routes.
+Unknown public paths return 404 rather than duplicating the homepage.
+
+Public metadata lives in `web/src/siteMetadata.ts`. Update its canonical origin
+if the production domain changes. The build also emits `robots.txt` and a
+homepage-only sitemap. The social card is `web/public/fleet-social.png`
+(1200 × 630), with editable artwork in `output/brand/fleet-social.svg`.
+Run `npm run check:seo` after building to validate the served artifacts.
+See [the GEO assessment](docs/geo-assessment.md) for the scope and limits.
+
 ## Connecting an agent
 
 See [How to integrate an agent](docs/how-to-integrate-agent.md) for the complete

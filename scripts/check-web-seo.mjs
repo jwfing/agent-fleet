@@ -1,0 +1,26 @@
+import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
+import { JSDOM } from "jsdom";
+
+const html = await readFile("dist/web/index.html", "utf8");
+const document = new JSDOM(html).window.document;
+assert.equal(document.querySelectorAll("h1").length, 1);
+assert.equal(document.querySelector("h1").textContent, "Fleet: AI agent workflow orchestration");
+assert.ok(document.title.length >= 10 && document.title.length <= 65);
+assert.equal(document.querySelector('link[rel="canonical"]').href, "https://fleet.elseward.xyz/");
+for (const key of ["og:title", "og:description", "og:image"]) assert.ok(document.querySelector(`meta[property="${key}"]`).content);
+assert.equal(document.querySelector('meta[name="twitter:card"]').content, "summary_large_image");
+assert.equal(JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent)["@type"], "SoftwareApplication");
+document.querySelectorAll('script,style,[aria-hidden="true"]').forEach((node) => node.remove());
+const words = document.body.textContent.trim().split(/\s+/).length;
+assert.ok(words > 300, `Only ${words} words in initial HTML`);
+const png = await readFile("dist/web/fleet-social.png");
+assert.equal(png.readUInt32BE(16), 1200);
+assert.equal(png.readUInt32BE(20), 630);
+const app = new JSDOM(await readFile("dist/web/app.html", "utf8")).window.document;
+assert.ok(app.querySelector('meta[name="robots"]').content.includes("noindex"));
+assert.equal(app.querySelector('link[rel="canonical"]'), null);
+assert.equal(app.querySelector("#root").childElementCount, 0);
+assert.match(await readFile("dist/web/robots.txt", "utf8"), /Sitemap: https:\/\/fleet\.elseward\.xyz\/sitemap.xml/);
+assert.match(await readFile("dist/web/sitemap.xml", "utf8"), /<loc>https:\/\/fleet\.elseward\.xyz\/<\/loc>/);
+console.log(`SEO artifact checks passed: 1 H1, ${words} words without JavaScript, full metadata, 1200×630 social image, isolated noindex console shell.`);
