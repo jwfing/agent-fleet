@@ -14,14 +14,15 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "node scripts/build.mjs && vite build",
+    "build": "node scripts/build.mjs && vite build && node scripts/prerender.mjs",
     "start": "node --enable-source-maps dist/index.js",
     "dev": "tsx watch src/index.ts",
     "migrate": "node scripts/migrate.mjs",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p web/tsconfig.json --noEmit",
-    "dev:web": "vite"
+    "dev:web": "vite",
+    "check:seo": "node scripts/check-web-seo.mjs"
   },
   "devDependencies": {
     "@testing-library/react": "^16.3.3",

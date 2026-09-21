@@ -725,6 +725,33 @@
 .wordmark-hero .run {
   color: var(--accent-bright);
 }
+.product-answers {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 76px 40px;
+}
+.product-answers h2 {
+  max-width: none;
+}
+.answer-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px 48px;
+  margin-top: 32px;
+}
+.answer-grid h3 {
+  font-size: 18px;
+  color: var(--ink);
+  margin: 0 0 12px;
+}
+.answer-grid p {
+  color: var(--muted);
+  margin: 0 0 12px;
+}
+@media (max-width: 720px) {
+  .answer-grid { grid-template-columns: 1fr; }
+  .product-answers { padding: 48px 24px; }
+}
 
 .site h2 {
   font-size: clamp(28px, 3.4vw, 40px);

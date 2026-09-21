@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { AsciiGlobe } from "../components/AsciiGlobe.tsx";
 import { cameraAt } from "../landingCamera.ts";
 import { PRODUCT_NAME } from "../product.ts";
+import { SEARCH_NAME } from "../siteMetadata.ts";
 import { FleetMark } from "../components/FleetMark.tsx";
 import { BOX, LOOP, TIMELINE, VIEWBOX, boxY, loopLabelY, loopPath } from "../traceGraph.ts";
 import "../landing.css";
@@ -443,12 +444,12 @@ export function Landing() {
         <section className="stop centred hero">
           <div className="stop-copy">
             <h1 className="wordmark-hero">
-              <span className="hero-line">Turn independent agents</span>
-              <span className="hero-line">into one <span className="run">observable fleet.</span></span>
+              <span className="hero-line">{PRODUCT_NAME}: AI agent </span>
+              <span className="hero-line"><span className="run">workflow orchestration</span></span>
             </h1>
             <p className="blurb">
-              Connect any A2A agent, compose real workflows, and see exactly where
-              the work is moving—or stuck.
+              {SEARCH_NAME} is an open-source gateway for teams running independent AI agents.
+              Connect A2A-compatible agents, compose multi-agent workflows, and trace every run.
             </p>
             <div className="four-words">
               {JOURNEY.map((step, index) => (
@@ -630,6 +631,39 @@ export function Landing() {
                 </div>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section className="product-answers" aria-labelledby="product-answers-title">
+          <h2 id="product-answers-title">How Fleet coordinates AI agents</h2>
+          <div className="answer-grid">
+            <article>
+              <h3>What is {SEARCH_NAME}?</h3>
+              <p>Fleet is a multi-tenant A2A gateway and workflow orchestration layer for developers.
+                It registers agent endpoints, discovers their skills, routes tasks between agents,
+                and records the progress of each workflow run.</p>
+            </article>
+            <article>
+              <h3>How do I connect an existing agent?</h3>
+              <p>Expose an Agent Card and an A2A endpoint, then register the endpoint in Fleet.
+                The agent runs in your own environment and can use an A2A SDK;
+                no Fleet-specific SDK is required. Current A2A support has SDK compatibility
+                limits; check the integration guide before connecting an existing server.</p>
+              <a href="https://github.com/jwfing/agent-fleet/blob/main/docs/how-to-integrate-agent.md">Read the agent integration guide</a>
+            </article>
+            <article>
+              <h3>How are long-running workflows handled?</h3>
+              <p>Define a workflow as states and transitions. Fleet dispatches work to agent skills,
+                receives asynchronous callbacks, retries deliveries, and tracks deadlines.
+                The console shows task state and the timeline of each run.</p>
+            </article>
+            <article>
+              <h3>Can I self-host Fleet?</h3>
+              <p>Yes. Fleet is released under the Apache 2.0 license and runs with Node.js and PostgreSQL.
+                Tenants isolate their agents, workflows and runs. The source includes setup instructions
+                and database migrations.</p>
+              <a href="https://github.com/jwfing/agent-fleet#quick-start">View the source and self-hosting instructions</a>
+            </article>
           </div>
         </section>
 

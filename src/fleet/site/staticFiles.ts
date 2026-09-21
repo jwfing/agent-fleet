@@ -8,7 +8,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
  *
  * Two things this has to get right. Paths are resolved and then checked to be
  * inside the root, so `../` in a request cannot walk out of it. And anything
- * that is not a real file falls back to `index.html`, because the client owns
+ * that is not a real file falls back to the app shell, because the client owns
  * routing — without that, a reload on `/app` is a 404.
  */
 
@@ -17,6 +17,8 @@ const TYPES: Record<string, string> = {
   ".js": "text/javascript; charset=utf-8",
   ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
+  ".txt": "text/plain; charset=utf-8",
+  ".xml": "application/xml; charset=utf-8",
   ".svg": "image/svg+xml",
   ".png": "image/png",
   ".jpg": "image/jpeg",
@@ -84,12 +86,19 @@ export function createStaticHandler(opts: StaticOptions) {
     // says nothing about the real problem (a stale or wrong bundle name).
     if (direct.kind === "missing" && pathname.startsWith(immutable)) return false;
 
-    const shell = direct.kind === "file" ? null : await fileIn(root, "index.html");
+    const homepage = pathname === "/" || pathname === "/index.html";
+    const clientRoute = /^\/(?:login|forgot-password|reset-password|app)(?:\/|$)/.test(pathname);
+    // Unknown URLs must be real 404s, not duplicate homepages.
+    if (direct.kind === "missing" && !homepage && !clientRoute) return false;
+    let shell = direct.kind === "file" ? null : await fileIn(root, homepage ? "index.html" : "app.html");
+    // Older builds predate the separate console shell.
+    if (shell?.kind === "missing") shell = await fileIn(root, "index.html");
     const file = direct.kind === "file" ? direct.path : shell?.kind === "file" ? shell.path : null;
     if (!file) return false;
 
     res.statusCode = 200;
     res.setHeader("content-type", TYPES[extname(file)] ?? "application/octet-stream");
+    if (extname(file) === ".html" && !homepage) res.setHeader("X-Robots-Tag", "noindex, follow");
     res.setHeader(
       "cache-control",
       direct.kind === "file" && pathname.startsWith(immutable)

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0f1216"/>
+  <rect x="64" y="62" width="1072" height="506" rx="24" fill="#171b21" stroke="#3a434e"/>
+  <defs><path id="unit" d="M0 14 16 0H40V18L24 30V14Z"/></defs>
+  <g transform="translate(108 102) scale(1.4)" fill="#6fb3e0">
+    <use href="#unit" x="64" y="13"/><use href="#unit" x="36" y="37"/><use href="#unit" x="8" y="61"/>
+  </g>
+  <g font-family="Arial, sans-serif">
+    <text x="290" y="192" fill="#e3e8ee" font-size="66" font-weight="700">Agent Fleet</text>
+    <text x="110" y="326" fill="#e3e8ee" font-size="48" font-weight="700">AI agent workflow orchestration</text>
+    <text x="110" y="390" fill="#94a0ae" font-size="28">Connect agents. Compose workflows. Trace every run.</text>
+    <text x="110" y="493" fill="#6fb3e0" font-size="23">OPEN SOURCE · A2A NATIVE</text>
+    <text x="825" y="493" fill="#94a0ae" font-size="22">fleet.elseward.xyz</text>
+  </g>
+</svg>

@@ -62,7 +62,10 @@ const store = {
 beforeAll(async () => {
   dir = mkdtempSync(join(tmpdir(), "fleet-web-"));
   mkdirSync(join(dir, "assets"));
-  writeFileSync(join(dir, "index.html"), "<!doctype html><title>shell</title>");
+  writeFileSync(join(dir, "index.html"), "<!doctype html><title>home shell</title><h1>Fleet orchestration</h1>");
+  writeFileSync(join(dir, "app.html"), '<!doctype html><title>console shell</title><meta name="robots" content="noindex, follow">');
+  writeFileSync(join(dir, "robots.txt"), "User-agent: *\nAllow: /\n");
+  writeFileSync(join(dir, "sitemap.xml"), '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"></urlset>');
   writeFileSync(join(dir, "assets", "index-abc123.js"), "console.log(1)");
   // A file the server must never reach, one level above the web root.
   writeFileSync(join(dir, "..", "fleet-web-secret.txt"), "do not serve me");
@@ -88,15 +91,19 @@ describe("serving the SPA", () => {
     const res = await fetch(`${base}/`);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/html");
-    expect(await res.text()).toContain("shell");
+    expect(await res.text()).toContain("<h1>Fleet orchestration</h1>");
+    expect(res.headers.get("x-robots-tag")).toBeNull();
   });
 
   it("falls back to the shell for a client-side route", async () => {
     // Without this, reloading the page on /app is a 404.
-    for (const path of ["/app", "/app/runs/12", "/login"]) {
+    for (const path of ["/app", "/app/runs/12", "/login", "/forgot-password", "/reset-password?token=test"]) {
       const res = await fetch(`${base}${path}`);
       expect(res.status, path).toBe(200);
-      expect(await res.text()).toContain("shell");
+      const html = await res.text();
+      expect(html).toContain("console shell");
+      expect(html).not.toContain("<h1>Fleet orchestration");
+      expect(res.headers.get("x-robots-tag")).toBe("noindex, follow");
     }
   });
 
@@ -104,6 +111,15 @@ describe("serving the SPA", () => {
     const res = await fetch(`${base}/assets/index-abc123.js`);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/javascript");
+  });
+  it("serves discovery files with the correct MIME types", async () => {
+    expect((await fetch(`${base}/robots.txt`)).headers.get("content-type")).toContain("text/plain");
+    expect((await fetch(`${base}/sitemap.xml`)).headers.get("content-type")).toContain("application/xml");
+  });
+  it("returns real 404s for unknown pages and missing assets", async () => {
+    for (const path of ["/not-a-page", "/missing.png", "/assets/missing.js"]) {
+      expect((await fetch(`${base}${path}`)).status).toBe(404);
+    }
   });
 });
 
