@@ -341,6 +341,75 @@ npm run typecheck
 against a real Postgres, with agents on the real A2A runtime. The only stubs
 are the agents' business logic — the one part a fleet is not responsible for.
 
+## How to contribute
+
+Bug reports, documentation fixes, agent integration examples, and code changes
+are welcome. For a larger feature or a change to the A2A contract, open an
+[issue](https://github.com/jwfing/agent-fleet/issues) first to discuss the
+intended behavior. For a bug, include reproduction steps, expected and actual
+results, and relevant logs with credentials removed.
+
+### Set up local development
+
+Fork [the repository](https://github.com/jwfing/agent-fleet), clone your fork,
+and create a branch from the latest `main`. You need Node.js 20+, PostgreSQL,
+and a Docker-compatible container runtime for the database-backed tests.
+
+```bash
+git switch -c feat/your-change
+npm ci
+cp .env.example .env
+```
+
+In `.env`, point `DATABASE_URL` at a local development database and generate
+separate `FLEET_SECRET_KEY` and `BETTER_AUTH_SECRET` values with
+`openssl rand -hex 32`. Set both `FLEET_PUBLIC_BASE_URL` and
+`FLEET_TRUSTED_ORIGINS` to `http://localhost:5173`, keeping `FLEET_PORT=8790`.
+GitHub OAuth and SMTP are optional for local development; their setup is
+described in [Quick start](#quick-start).
+
+```bash
+npm run migrate
+npm run dev
+```
+
+In a second terminal, run `npm run dev:web` and open `http://localhost:5173`.
+Vite proxies API requests to the gateway on port 8790. If you are connecting
+a local agent over HTTP, set `FLEET_ALLOW_INSECURE_AGENTS=1` for local
+development only.
+
+### Make and verify your change
+
+The gateway and workflow engine live in `src/fleet/`, authentication and email
+delivery in `src/auth.ts` and `src/email.ts`, and the React console in
+`web/src/`. Tests live in `test/`; the [design docs](#design-docs) explain the
+gateway and workflow model.
+
+Keep each pull request focused, add regression tests for behavior changes,
+and update documentation when configuration or public APIs change. For code
+changes, run:
+
+```bash
+npm run typecheck
+npm test
+npm run build
+```
+
+The PostgreSQL-backed tests create disposable databases through Testcontainers,
+so start your container runtime before running them. For homepage or search
+metadata changes, also run `npm run check:seo` after the build. For UI changes,
+check the affected screens at desktop and mobile widths.
+
+### Open a pull request
+
+Push your branch to your fork and open a pull request against this repository's
+`main` branch. Describe the problem, what changes for users, and how you tested
+it. Link any related issue and include screenshots for visible UI changes.
+If a check could not run, say which one and why.
+
+Keep `.env` files, credentials, and generated build output out of commits.
+Contributions are made under the project's [Apache 2.0 license](LICENSE).
+
 ## Status
 
 Working and tested: agent registration and discovery, the task ledger with
